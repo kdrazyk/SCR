@@ -1,14 +1,6 @@
 #!/usr/bin/env sh
 
-# ============================================================================ #
-#                              Konfiguracja ręczna
-# ============================================================================ #
-# Na routerze trzeba ustawić ręcznie ip dla danych sieci wewnętrznych.
-# Będzie to to samo co w SIEC_A_IP_ROUTER i SIEC_B_IP_ROUTER
-# z maskami SIEC_A_MASKA i SIEC_B_MASKA
-
-# Przed uruchomiemiem skryptu trzeba umożliwić jego wykonywanie
-# chmod +x router.sh
+# Instrukcje jak tego użyć są w pliku README.md
 
 # ============================================================================ #
 #                                 Konfiguracja

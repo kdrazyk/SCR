@@ -1,9 +1,19 @@
 
 
 
+# Jak rozwiązać problem z SCR&rsquo;ami w 15 min :)
+
+Cały proces składa się z trzech kroków:
+
+1.  przygotowujemy pierwszą maszynę wirtualną, robimy kopie i ustawiamy karty sieciowe w virtual boxie
+2.  na routerze ustawiamy ręcznie kilka rzeczy w ustawieniach
+3.  wpisujemy swoje wartości w `skrypcik.sh` i uruchamiamy go
+
+
 # Instalacja i przygotowanie systemu
 
 System: Ubuntu 22.04.2 LTS
+
 <https://ubuntu.com/download/desktop/thank-you?version=22.04.2&architecture=amd64>
 
 Najpierw tworzymy router.
@@ -22,106 +32,61 @@ Najpierw tworzymy router.
 
 **Klonowanie**
 
--   Tworzymy trzy klony maszyny (A, B i zapas na wszelki wypadek)
+-   Tworzymy dwa klony maszyny (A i B)
 -   Podłączamy maszyny do odpowiednich sieci
--   Zmieniamy nazwy maszyn A i B
-    `sudo hostnamectl set-hostname nowa-nazwa`
-    `sudo nano /etc/hosts` - podmieniamy nazwę w drugiej linijce, Ctrl-O zapisz i Ctrl-X wyjdź
 
-Teraz mamy trzy wstępnie ustawione maszyny. Router powinien być podłączony do sieci komputera i wewnętrznej. Maszny A i B tylko do wewnętrznej. Z routera powinien być dostęp do internetu (można sprawdzić w przeglądarce lub `ping wp.pl` powinien nam dać odpowiedzi).
+Teraz mamy trzy wstępnie ustawione maszyny.
+Router powinien być podłączony do sieci komputera i dwóch wewnętrznych.
+Maszny A i B tylko do swojej wewnętrznej.
+Z routera powinien być dostęp do internetu (można sprawdzić w przeglądarce lub `ping wp.pl` powinien nam dać odpowiedzi).
 
 
-# Konfiguracja DHCP i STATIC
+# Ręczne zmiany w ustawieniach
 
-Otwieramy terminal na routerze.
+Wchodzimy w ustawienia -> Networking -> trybik przy karcie sieciowej od pierwszej sieci wewnętrznej -> zakładka IPv4
 
-    sudo apt install isc-dhcp-server -y
-    sudo nano /etc/dhcp/dhcpd.conf
+Ustawiamy na manual, wpisujemy IP routera w sieci A, wpisujemy maskę `255.255.255.0` i zamykamy.
+Jeśli nasza sieć ma mieć IP `10.0.1.0`, to router może mieć np. `10.0.1.1`.
+
+To samo trzeba zrobić dla karty od sieci B.
+
+
+# Skrypcik
+
+Otwieramy `skrypcik.sh` przy pomocy ulubionego edytora tekstu.
+Na początku pliku jest sekcja konfiguracyjna.
+Domyślnie wpisane są przykładowe wartości, ale pewnie większość trzeba będzie zmienić.
+
+    # Siec domowa
+    SIEC_DOMOWA_IP=192.168.0.0      # adres sieci, z której jest dostęp do internetu
+    SIEC_DOMOWA_MASKA=255.255.255.0 # maska sieci, z której jest dostęp do internetu
+    ROUTER_KARTA_DOMOWA=ens18       # nazwa karty sieciowej, z której jest dostęp do internetu (można sprawdzić w ustawieniach, albo poleceniem ip a)
     
-    # Na samym dole pliku:
-    # subnet 192.168.10.0 netmask 255.255.255.0 {
-    #   range 192.168.10.100 192.168.10.200;
-    #   option domain-name-servers 192.168.10.1 8.8.8.8;
-    #   option routers 192.168.10.1;
-    # }
+    # Siec A z DHCP
+    SIEC_A_IP=10.0.1.0              # adres sieci A
+    SIEC_A_MASKA=255.255.255.0      # maska sieci A
+    SIEC_A_IP_ROUTER=10.0.1.1       # adres routera w sieci A (ten sam, który był wpisany w ustawieniach)
+    SIEC_A_DHCP_START=10.0.1.100    # początek zakresu dhcp
+    SIEC_A_DHCP_STOP=10.0.1.200     # koniec zakresu dhcp
     
-    # subnet 192.168.0.0 netmask 255.255.255.0 {
-    # }
-    
-    # host SCR-A {
-    #         hardware ethernet BA:09:C4:5C:0F:58;
-    #         fixed-address 192.168.10.50;
-    #         option domain-name-servers 192.168.10.1, 8.8.8.8;
-    #         option routers 192.168.10.1;
-    # }
+    # Siec B z adresami statycznymi
+    SIEC_B_IP=10.0.2.0              # adres sieci B
+    SIEC_B_MASKA=255.255.255.0      # maska sieci B
+    SIEC_B_IP_ROUTER=10.0.2.1       # adres routera w sieci B (ten sam, który był wpisany w ustawieniach)
+    MASZYNA_B_MAC=86:7E:C0:F2:B4:81 # adres MAC karty sieciowej komputera B (można sprawdzić w ustawieniach, albo poleceniem ip a)
+    MASZYNA_B_STATIC_IP=10.0.2.10   # adres jaki wybieramy dla komputera B
 
-Teraz otwieramy ustawienia -> Network -> trybik przy sieci wewnętrznej -> zakładka IPv4.
-Wybieramy opcję manual, ustawiamy *Address* na 192.168.10.1 i *Netmask* na 255.255.255.0.
-Restartujemy router, A i B.
+Po wpisaniu swoich wartości zapisujemy plik.
+Zanim będzie można go uruchomić trzeba jeszcze sprawić, żeby był wykonywalny:
 
-Po restarcie maszyny powinny być w stanie się nawzajem pingować. Ich adresy możemy sprawdzić używając `ifconfig`, `ip a`, albo w ustawieniach (zakładka Details).
+`chmod +x skrypcik.sh`
 
+I można uruchomić:
 
-# Konfiguracja SSH
+`./skrypcik.sh`
 
-    sudo apt install openssh-server -y
-
-Teraz powinniśmy móc zalogować się na router z A i B, ponieważ firewall jeszcze nie działa.
-
-    # z A lub B
-    ssh 192.168.10.1
-
-Wracamy na router by ustawić firewall.
-
-    sudo ufw default deny incoming
-    sudo ufw default allow outgoing
-    sudo ufw allow from 192.168.10.50 to any port 22
-    sudo ufw allow 80
-    sudo ufw enable
-
-Teraz tylko maszyna o wybranym IP może się połączyć po SSH. Port 80 jest dla strony WWW.
-Możemy dokończyć konfigurację SSH dodając logowanie kluczem.
-
-    # komputer A
-    ssh-keygen
-    # klikamy enter kilka razy
-    ssh-copy-id 192.168.10.1
-    # logujemy się
-    # i powinno od teraz działać logowanie bez hasła
-    ssh 192.168.10.1
-
-
-# MASQUERADE
-
-    # router
-    sudo nano /etc/default/ufw
-    # zmieniamy
-    # DEFAULT_FORWARD_POLICY="DROP"
-    # na
-    # DEFAULT_FORWARD_POLICY="ACCEPT"
-    
-    sudo nano /etc/ufw/sysctl.conf
-    # odkomentowujemy linijkę "net/ipv4/ip_forward=1"
-    
-    sudo nano /etc/ufw/before.rules
-    # dodajemy na górze pliku:
-    # *nat
-    # :POSTROUTING ACCEPT [0:0]
-    # -A POSTROUTING -s 192.168.10.0/24 -o ens19 -j MASQUERADE
-    # COMMIT
-    
-    sudo ufw disable && sudo ufw enable
-
-Teraz maszyny A i B powinny mieć dostęp do internetu.
-
-
-# Serwer WWW
-
-    sudo apt install apache2 -y
-    cd /var/www/html
-    sudo rm index.html
-    sudo nano index.html
-    # wpisujemy jakąś testową treść strony
-
-Teraz z komputerów A i B powinniśmy móc wejść na tą stronę wpisując adres routera.
+Po zakończeniu instalacji maszyna sama się zrestartuje i wszystko powinno działać.
+Domyślnie logowanie po SSH możliwe jest tylko z komputera B.
+Pewnie warto też zmienić stronę na jakąś ciekawszą (`/var/www/html/index.html`).
+Jeśli coś nie działa, to na 99% jest błąd w konfiguracji, bo skrypt był już sprawdzany kilka razy.
 
