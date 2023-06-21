@@ -3,11 +3,24 @@
 
 # Jak rozwiązać problem z SCR&rsquo;ami w 15 min :)
 
+Ta instrukcja i skrypcik przygotowują podstawowy projekt z:
+
+-   dwiema sieciami
+-   DHCP i adresami statycznymi (domyślnie A ma adres po dhcp, a B statyczny)
+-   SSH
+-   skonfigurowanym firewal&rsquo;em UFW (domyślnie tylko komputer B ma dostęp po SSH)
+-   NAT&rsquo;em (dostęp do internetu z A i B)
+-   serwerem WWW
+
+W praktyce skrypt po prostu wykonuje po kolei te same kroki, więc można je zmienić pod siebie.
+
 Cały proces składa się z trzech kroków:
 
 1.  przygotowujemy pierwszą maszynę wirtualną, robimy kopie i ustawiamy karty sieciowe w virtual boxie
 2.  na routerze ustawiamy ręcznie kilka rzeczy w ustawieniach
 3.  wpisujemy swoje wartości w `skrypcik.sh` i uruchamiamy go
+
+Niestety nie mam czasu pomagać z tym nikomu osobiście, ale skrypt jest sprawdzony i jeśli skorzystasz z instruckcji, to wszystko powinno działać.
 
 
 # Instalacja i przygotowanie systemu
@@ -53,7 +66,8 @@ To samo trzeba zrobić dla karty od sieci B.
 
 # Skrypcik
 
-Otwieramy `skrypcik.sh` przy pomocy ulubionego edytora tekstu.
+Pobieramy `skrypcik.sh` na router.
+Otwieramy go przy pomocy ulubionego edytora tekstu.
 Na początku pliku jest sekcja konfiguracyjna.
 Domyślnie wpisane są przykładowe wartości, ale pewnie większość trzeba będzie zmienić.
 
