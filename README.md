@@ -21,6 +21,7 @@ Cały proces składa się z trzech kroków:
 3.  wpisujemy swoje wartości w `skrypcik.sh` i uruchamiamy go
 
 Niestety nie mam czasu pomagać z tym nikomu osobiście, ale skrypt jest sprawdzony i jeśli skorzystasz z instruckcji, to wszystko powinno działać.
+**Ale jeśli jakaś część jest niezrozumiała to proszę o informację. Pewnie pójdzie to na notion, więc fajnie jak by było łatwe i bezproblemowe w użyciu.**
 
 
 # Instalacja i przygotowanie systemu
